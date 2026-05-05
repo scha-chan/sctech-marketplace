@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MarketFlow - Marketplace Online</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="header-container">
+            <div class="logo">
+                <div class="logo-icon">M</div>
+                <span>MarketFlow</span>
+            </div>
+            <div class="search-container">
+                <div class="search-box">
+                    <input 
+                        type="text" 
+                        class="search-input" 
+                        placeholder="Buscar produtos..." 
+                        id="searchInput"
+                    >
+                    <button class="search-btn" onclick="searchProducts()">Buscar</button>
+                </div>
+            </div>
+            <div class="cart-icon" onclick="viewCart()">
+                🛒
+                <span class="cart-badge" id="cartBadge">0</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+        <div class="main-container">
+            <h1 class="section-title">Produtos em Destaque</h1>
+            
+            <div class="products-grid" id="productsContainer">
+                <!-- Products will be dynamically loaded here -->
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2026 MarketFlow. Todos os direitos reservados.</p>
+    </footer>
+
+    <script>
+        // Sample Products Data
+        const products = [
+            {
+                id: 1,
+                name: "Notebook Dell XPS 13",
+                category: "Eletrônicos",
+                price: 4999.99,
+                rating: 4.8,
+                emoji: "💻"
+            },
+            {
+                id: 2,
+                name: "Fone Bluetooth Sony",
+                category: "Áudio",
+                price: 599.99,
+                rating: 4.6,
+                emoji: "🎧"
+            },
+            {
+                id: 3,
+                name: "Câmera Canon 80D",
+                category: "Fotografia",
+                price: 3999.99,
+                rating: 4.9,
+                emoji: "📷"
+            },
+            {
+                id: 4,
+                name: "Monitor LG 27\" 4K",
+                category: "Monitores",
+                price: 1899.99,
+                rating: 4.7,
+                emoji: "🖥️"
+            },
+            {
+                id: 5,
+                name: "Teclado Mecânico RGB",
+                category: "Periféricos",
+                price: 349.99,
+                rating: 4.5,
+                emoji: "⌨️"
+            },
+            {
+                id: 6,
+                name: "Mouse Logitech MX Master",
+                category: "Periféricos",
+                price: 299.99,
+                rating: 4.8,
+                emoji: "🖱️"
+            },
+            {
+                id: 7,
+                name: "SSD Samsung 1TB",
+                category: "Armazenamento",
+                price: 599.99,
+                rating: 4.9,
+                emoji: "💾"
+            },
+            {
+                id: 8,
+                name: "GPU RTX 4080",
+                category: "Componentes",
+                price: 7999.99,
+                rating: 4.7,
+                emoji: "🎮"
+            },
+            {
+                id: 9,
+                name: "Power Bank 20000mAh",
+                category: "Acessórios",
+                price: 129.99,
+                rating: 4.4,
+                emoji: "🔋"
+            },
+            {
+                id: 10,
+                name: "Webcam Full HD",
+                category: "Vídeo",
+                price: 249.99,
+                rating: 4.6,
+                emoji: "📹"
+            },
+            {
+                id: 11,
+                name: "Headset Gamer",
+                category: "Gaming",
+                price: 459.99,
+                rating: 4.7,
+                emoji: "🎮"
+            },
+            {
+                id: 12,
+                name: "Hub USB-C",
+                category: "Conectores",
+                price: 199.99,
+                rating: 4.5,
+                emoji: "🔌"
+            }
+        ];
+
+        let cart = [];
+
+        // Render Products
+        function renderProducts(productsToRender = products) {
+            const container = document.getElementById('productsContainer');
+            container.innerHTML = '';
+
+            productsToRender.forEach(product => {
+                const productCard = document.createElement('div');
+                productCard.className = 'product-card';
+                productCard.innerHTML = `
+                    <div class="product-image">
+                        ${product.emoji}
+                    </div>
+                    <div class="product-info">
+                        <div class="product-name">${product.name}</div>
+                        <div class="product-category">${product.category}</div>
+                        <div class="product-rating">★ ${product.rating}</div>
+                        <div class="product-price">R$ ${product.price.toFixed(2).replace('.', ',')}</div>
+                        <button class="add-to-cart-btn" onclick="addToCart(${product.id})">
+                            Adicionar ao Carrinho
+                        </button>
+                    </div>
+                `;
+                container.appendChild(productCard);
+            });
+        }
+
+        // Add to Cart
+        function addToCart(productId) {
+            const product = products.find(p => p.id === productId);
+            if (product) {
+                const existingItem = cart.find(item => item.id === productId);
+                if (existingItem) {
+                    existingItem.quantity++;
+                } else {
+                    cart.push({...product, quantity: 1});
+                }
+                updateCartBadge();
+                showNotification(`${product.name} adicionado ao carrinho!`);
+            }
+        }
+
+        // Update Cart Badge
+        function updateCartBadge() {
+            const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+            document.getElementById('cartBadge').textContent = totalItems;
+        }
+
+        // Search Products
+        function searchProducts() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            if (searchTerm.trim() === '') {
+                renderProducts();
+                return;
+            }
+            
+            const filtered = products.filter(product => 
+                product.name.toLowerCase().includes(searchTerm) ||
+                product.category.toLowerCase().includes(searchTerm)
+            );
+            
+            if (filtered.length === 0) {
+                document.getElementById('productsContainer').innerHTML = 
+                    '<p style="grid-column: 1/-1; text-align: center; padding: 40px; color: #7f8c8d;">Nenhum produto encontrado.</p>';
+            } else {
+                renderProducts(filtered);
+            }
+        }
+
+        // View Cart
+        function viewCart() {
+            if (cart.length === 0) {
+                showNotification('Carrinho vazio!');
+                return;
+            }
+            
+            let cartContent = 'CARRINHO:\n\n';
+            cart.forEach(item => {
+                cartContent += `${item.name} (x${item.quantity}) - R$ ${(item.price * item.quantity).toFixed(2)}\n`;
+            });
+            const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            cartContent += `\nTotal: R$ ${total.toFixed(2)}`;
+            
+            alert(cartContent);
+        }
+
+        // Show Notification
+        function showNotification(message) {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 80px;
+                right: 20px;
+                background-color: #27ae60;
+                color: white;
+                padding: 15px 20px;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+                font-weight: 500;
+                z-index: 1000;
+                animation: slideIn 0.3s ease;
+            `;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+
+        // Add animations to style
+        // Animations are now in styles.css
+
+        // Allow Enter key to search
+        document.getElementById('searchInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                searchProducts();
+            }
+        });
+
+        // Initial render
+        renderProducts();
+    </script>
+</body>
+</html>
